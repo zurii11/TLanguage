@@ -1,10 +1,12 @@
 #include <iostream>
+#include "stack.h"
 
 enum OPS
 {
     PUSH,
     PLUS,
     MINUS,
+    EQUAL,
     DUMP
 };
 
@@ -26,10 +28,21 @@ int* minus()
     return rt;
 }
 
+int* equal()
+{
+    int* rt = new int[2]{3, };
+    return rt;
+}
+
+int* dump()
+{
+    int* rt = new int[2]{4, };
+    return rt;
+}
+
 void compile_program(int* program[], int size)
 {
-    int stack[100]{};
-    int stackIndex{0};
+    Stack stack;
     int a, b;
 
     for (int i{0}; i < size; ++i)
@@ -38,27 +51,23 @@ void compile_program(int* program[], int size)
         {
             case PUSH: // PUSH
                 std::cout << "PUSH\n";
-                stack[stackIndex] = program[i][1]; 
-                ++stackIndex;
+                stack.push(program[i][1]);
                 break;
             case PLUS: // PLUS
                 std::cout << "PLUS\n";
-                a = stack[stackIndex-1];
-                b = stack[stackIndex-2];
-                stack[stackIndex] = a + b;
-                std::cout << "PLUS RESULT: " << stack[stackIndex] << '\n';
-                ++stackIndex;
+                stack.plus();
                 break;
             case MINUS: // MINUS
                 std::cout << "MINUS\n";
-                a = stack[stackIndex-1];
-                b = stack[stackIndex-2];
-                stack[stackIndex] = a - b;
-                std::cout << "MINUS RESULT: " << stack[stackIndex] << '\n';
-                ++stackIndex;
+                stack.minus();
+                break;
+            case EQUAL:
+                std::cout << "EQUAL\n";
+                stack.equal();
                 break;
             case DUMP: // DUMP
                 std::cout << "DUMP\n";
+                stack.dump();
                 break;
             default:
                 std::cout << "Error: undefined operation\n";
@@ -68,6 +77,6 @@ void compile_program(int* program[], int size)
 
 int main()
 {
-   int* program[]{ push(1), push(5), plus(), minus() };
+   int* program[]{ push(1), push(5), dump(), plus(), dump(), push(8), minus(), dump(), push(1), equal(), dump() };
    compile_program(program, sizeof(program)/sizeof(program[0]));
 }
