@@ -80,9 +80,9 @@ void compile_program(int* program[], int size)
     }
 }
 
-void parse_tokens()
+void parse_tokens(std::string filepath)
 {
-    std::vector<Token> tokens = lex_file("program.tl");
+    std::vector<Token> tokens = lex_file(filepath);
     int* program[100]{};
     int ind{};
 
@@ -117,10 +117,10 @@ void parse_tokens()
     compile_program(program, ind+1);
 }
 
-int main()
+int main(int argc, char** argv)
 {
     //int* program[]{ push(1), push(5), dump(), plus(), dump(), push(8), minus(), dump(), push(1), equal(), dump() };
     //compile_program(program, sizeof(program)/sizeof(program[0]));
 
-    parse_tokens();
+    parse_tokens(argv[1]);
 }
