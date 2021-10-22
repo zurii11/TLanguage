@@ -48,7 +48,7 @@ int Stack::minus()
     int a = pop();
     int b = pop();
     
-    push(a-b);
+    push(b-a);
 
     return stack[top];
 }

@@ -4,8 +4,6 @@
 #include "stack.h"
 #include "lexer.h"
 
-// TODO: Move from int* to structs in program[]
-
 enum OPS
 {
     PUSH,
@@ -15,48 +13,54 @@ enum OPS
     DUMP
 };
 
-int* push(int x)
+struct OP
 {
-    int* rt = new int[2]{0, x};
-    return rt;
+    int id;
+    int param;
+};
+
+OP push(int x)
+{
+    //int* rt = new int[2]{0, x};
+    return { 0, x};
 }
 
-int* plus()
+OP plus()
 {
-    int* rt = new int[2]{1, };
-    return rt;
+    //int* rt = new int[2]{1, };
+    return { 1, };
 }
 
-int* minus()
+OP minus()
 {
-    int* rt = new int[2]{2, };
-    return rt;
+    //int* rt = new int[2]{2, };
+    return { 2, };
 }
 
-int* equal()
+OP equal()
 {
-    int* rt = new int[2]{3, };
-    return rt;
+    //int* rt = new int[2]{3, };
+    return { 3, };
 }
 
-int* dump()
+OP dump()
 {
-    int* rt = new int[2]{4, };
-    return rt;
+    //int* rt = new int[2]{4, };
+    return { 4, };
 }
 
-void compile_program(int* program[], int size)
+void compile_program(OP program[100], int size)
 {
     Stack stack;
     int a, b;
 
     for (int i{0}; i < size; ++i)
     {
-        switch (program[i][0])
+        switch (program[i].id)
         {
             case PUSH: // PUSH
                 std::cout << "PUSH\n";
-                stack.push(program[i][1]);
+                stack.push(program[i].param);
                 break;
             case PLUS: // PLUS
                 std::cout << "PLUS\n";
@@ -83,7 +87,7 @@ void compile_program(int* program[], int size)
 void parse_tokens(std::string filepath)
 {
     std::vector<Token> tokens = lex_file(filepath);
-    int* program[100]{};
+    OP program[100]{};
     int ind{};
 
     for (int i{0}; i < tokens.size(); i++)
@@ -113,6 +117,8 @@ void parse_tokens(std::string filepath)
 
         ind = i;
     }
+
+    std::cout << ind << '\n';
 
     compile_program(program, ind+1);
 }
