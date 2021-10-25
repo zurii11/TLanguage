@@ -6,13 +6,17 @@
 #include "stack.h"
 #include "lexer.h"
 
+// TODO: Improve error handling.
+
 enum OPS
 {
     PUSH,
     PLUS,
     MINUS,
     EQUAL,
-    DUMP
+    DUMP,
+    IF,
+    END,
 };
 
 struct OP
@@ -51,6 +55,16 @@ OP dump()
     return { 4, };
 }
 
+OP iff()
+{
+    return { 5, };
+}
+
+OP end()
+{
+    return { 6, };
+}
+
 void error(int line, int col, std::string filepath, std::string token, std::string msg)
 {
     std::cerr << "Error at " << filepath << "; line - " << line << "; column - " << col << "; token - \"" << token << "\": " << msg << '\n';
@@ -78,13 +92,23 @@ void compile_program(OP program[100], int size)
                 std::cout << "MINUS\n";
                 stack.minus();
                 break;
-            case EQUAL:
+            case EQUAL: // EQUAL
                 std::cout << "EQUAL\n";
                 stack.equal();
                 break;
             case DUMP: // DUMP
                 std::cout << "DUMP\n";
                 stack.dump();
+                break;
+            case IF: // IF
+                // simple crossreferencing is done here, better move it to separate function
+                a = stack.pop();
+                if (a)
+                    continue;
+                else    
+                    i = program[i].param-1;
+                break;
+            case END: // END
                 break;
             default:
                 std::cout << "Error: undefined operation\n";
@@ -96,6 +120,7 @@ void parse_tokens(std::string filepath)
 {
     std::vector<Token> tokens = lex_file(filepath);
     OP program[100]{};
+    int if_ind;
     int ind{};
 
     for (int i{0}; i < tokens.size(); i++)
@@ -117,6 +142,16 @@ void parse_tokens(std::string filepath)
         else if (token == ".")
         {
             program[i] = dump();
+        }
+        else if (token == "if")
+        {
+            program[i] = iff();
+            if_ind = i;
+        }
+        else if (token == "end")
+        {
+            program[i] = end();
+            program[if_ind].param = i;
         }
         else
         {
