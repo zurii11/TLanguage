@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -47,6 +49,12 @@ OP dump()
 {
     //int* rt = new int[2]{4, };
     return { 4, };
+}
+
+void error(int line, int col, std::string filepath, std::string token, std::string msg)
+{
+    std::cerr << "Error at " << filepath << "; line - " << line << "; column - " << col << "; token - \"" << token << "\": " << msg << '\n';
+    std::exit(1);
 }
 
 void compile_program(OP program[100], int size)
@@ -112,7 +120,14 @@ void parse_tokens(std::string filepath)
         }
         else
         {
-            program[i] = push(std::stoi(token));
+            try
+            {
+                program[i] = push(std::stoi(token));
+            }
+            catch (std::exception &err)
+            {
+                error(tokens[i].line, tokens[i].column, tokens[i].filepath, token, "Expected int.");
+            }
         }
 
         ind = i;
