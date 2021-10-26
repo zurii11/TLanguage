@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cassert>
 #include "stack.h"
 #include "lexer.h"
 
@@ -16,6 +17,7 @@ enum OPS
     EQUAL,
     DUMP,
     IF,
+    ELSE,
     END,
 };
 
@@ -28,41 +30,46 @@ struct OP
 OP push(int x)
 {
     //int* rt = new int[2]{0, x};
-    return { 0, x};
+    return { PUSH, x};
 }
 
 OP plus()
 {
     //int* rt = new int[2]{1, };
-    return { 1, };
+    return { PLUS, };
 }
 
 OP minus()
 {
     //int* rt = new int[2]{2, };
-    return { 2, };
+    return { MINUS, };
 }
 
 OP equal()
 {
     //int* rt = new int[2]{3, };
-    return { 3, };
+    return { EQUAL, };
 }
 
 OP dump()
 {
     //int* rt = new int[2]{4, };
-    return { 4, };
+    return { DUMP, };
 }
 
 OP iff()
 {
-    return { 5, };
+    return { IF, };
+}
+
+OP elze()
+{
+    return { ELSE, };
 }
 
 OP end()
 {
-    return { 6, };
+    return { END, };
 }
 
 void error(int line, int col, std::string filepath, std::string token, std::string msg)
@@ -101,13 +108,14 @@ void compile_program(OP program[100], int size)
                 stack.dump();
                 break;
             case IF: // IF
-                // simple crossreferencing is done here, better move it to separate function
                 a = stack.pop();
                 if (a)
                     continue;
                 else    
                     i = program[i].param-1;
                 break;
+            case ELSE: // ELSE
+                i = program[i].param-1;
             case END: // END
                 break;
             default:
@@ -120,7 +128,7 @@ void parse_tokens(std::string filepath)
 {
     std::vector<Token> tokens = lex_file(filepath);
     OP program[100]{};
-    int if_ind;
+    Stack blocks;
     int ind{};
 
     for (int i{0}; i < tokens.size(); i++)
@@ -146,12 +154,24 @@ void parse_tokens(std::string filepath)
         else if (token == "if")
         {
             program[i] = iff();
-            if_ind = i;
+            blocks.push(i);
+        }
+        else if (token == "else")
+        {
+            program[i] = elze();
+            int block_ind = blocks.pop();
+
+            assert(program[block_ind].id == IF && "Else can only close 'if' blocks");
+            program[block_ind].param = i + 1;
+            blocks.push(i);
         }
         else if (token == "end")
         {
             program[i] = end();
-            program[if_ind].param = i;
+            int block_ind = blocks.pop();
+
+            assert((program[block_ind].id == IF || program[block_ind].id == ELSE) && "End can only close 'if' and 'else' blocks");
+            program[block_ind].param = i + 1;
         }
         else
         {
