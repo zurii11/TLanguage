@@ -57,7 +57,6 @@ std::vector<Token> lex_line(std::string* line, std::string* filepath, std::vecto
     while (source.size() > 0)
     {
         token = chop_delim(&source, ' ');
-        std::cout << token << " " << col << " In lex line!\n";
         tokens->push_back({ *filepath, token, line_number, col });
         source = source.substr(token.size());
         source = trim_left(&source);

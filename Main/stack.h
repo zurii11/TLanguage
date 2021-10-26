@@ -10,6 +10,10 @@ public:
     int pop();
     int plus();
     int minus();
+    int greater();
+    int less();
     int equal();
+    int xequal();
+    void dup();
     int dump();
 };

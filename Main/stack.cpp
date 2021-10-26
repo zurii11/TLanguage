@@ -53,6 +53,40 @@ int Stack::minus()
     return stack[top];
 }
 
+int Stack::greater()
+{
+    int a = pop();
+    int b = pop();
+
+    if (b > a)
+    {
+        push(1);
+        return 1;
+    }
+    else
+    {
+        push(0);
+        return 0;
+    }
+}
+
+int Stack::less()
+{
+    int a = pop();
+    int b = pop();
+
+    if (b < a)
+    {
+        push(1);
+        return 1;
+    }
+    else
+    {
+        push(0);
+        return 0;
+    }
+}
+
 int Stack::equal()
 {
     int a = pop();
@@ -70,14 +104,40 @@ int Stack::equal()
     }
 }
 
+int Stack::xequal()
+{
+    int a = pop();
+    int b = pop();
+
+    if (a != b)
+    {
+        push(1);
+        return 1;
+    }
+    else
+    {
+        push(0);
+        return 0;
+    }
+}
+
+void Stack::dup()
+{
+    int a = pop();
+
+    push(a);
+    push(a);
+}
+
 int Stack::dump()
 {
     if (top >= size-1)
         std::cout << "Stack Overflow\n";
     else
     {
-        std::cout << "Stack top is: " << stack[top] << '\n';
-        return stack[top];
+        int a = pop();
+        std::cout << "Stack top is: " << a << '\n';
+        return a;
     }
 
     return 1;
