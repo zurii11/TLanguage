@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <exception>
+#include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -14,11 +15,18 @@ enum OPS
     PUSH,
     PLUS,
     MINUS,
+    GREATER,
+    LESS,
     EQUAL,
+    XEQUAL,
+    DUP,
     DUMP,
     IF,
     ELSE,
+    WHILE,
+    DO,
     END,
+    COUNT_OPS
 };
 
 struct OP
@@ -45,10 +53,30 @@ OP minus()
     return { MINUS, };
 }
 
+OP greater()
+{
+    return { GREATER, };
+}
+
+OP less()
+{
+    return { LESS, };
+}
+
 OP equal()
 {
     //int* rt = new int[2]{3, };
     return { EQUAL, };
+}
+
+OP xequal()
+{
+    return { XEQUAL, };
+}
+
+OP dup()
+{
+    return { DUP, };
 }
 
 OP dump()
@@ -67,6 +95,16 @@ OP elze()
     return { ELSE, };
 }
 
+OP wile()
+{
+    return { WHILE, };
+}
+
+OP doo()
+{
+    return { DO, };
+}
+
 OP end()
 {
     return { END, };
@@ -80,6 +118,8 @@ void error(int line, int col, std::string filepath, std::string token, std::stri
 
 void compile_program(OP program[100], int size)
 {
+    assert(COUNT_OPS == 14 && "Didn't handle all operations");
+
     Stack stack;
     int a, b;
 
@@ -99,9 +139,25 @@ void compile_program(OP program[100], int size)
                 std::cout << "MINUS\n";
                 stack.minus();
                 break;
+            case GREATER: // GREATER
+                std::cout << "GREATER\n";
+                stack.greater();
+                break;
+            case LESS: // LESS
+                std::cout << "LESS\n";
+                stack.less();
+                break;
             case EQUAL: // EQUAL
                 std::cout << "EQUAL\n";
                 stack.equal();
+                break;
+            case XEQUAL: // XEQUAL
+                std::cout << "XEQUAL\n";
+                stack.xequal();
+                break;
+            case DUP:
+                std::cout << "DUPLICATE\n";
+                stack.dup();
                 break;
             case DUMP: // DUMP
                 std::cout << "DUMP\n";
@@ -116,7 +172,18 @@ void compile_program(OP program[100], int size)
                 break;
             case ELSE: // ELSE
                 i = program[i].param-1;
+                break;
+            case WHILE: // WHILE
+                break;
+            case DO: // DO
+                a = stack.pop();
+                if (a)
+                    continue;
+                else
+                 i = program[i].param-1;
+                break;
             case END: // END
+                i = program[i].param-1;
                 break;
             default:
                 std::cout << "Error: undefined operation\n";
@@ -124,8 +191,11 @@ void compile_program(OP program[100], int size)
     }
 }
 
+// Parsing and crossreferencing are both done here
 void parse_tokens(std::string filepath)
 {
+    assert(COUNT_OPS == 14 && "Didn't handle all operations");
+
     std::vector<Token> tokens = lex_file(filepath);
     OP program[100]{};
     Stack blocks;
@@ -143,9 +213,25 @@ void parse_tokens(std::string filepath)
         {
             program[i] = minus();
         }
+        else if (token == ">")
+        {
+            program[i] = greater();
+        }
+        else if (token == "<")
+        {
+            program[i] = less();
+        }
         else if (token == "=")
         {
             program[i] = equal();
+        }
+        else if (token == "!=")
+        {
+            program[i] = xequal();
+        }
+        else if (token == "dup")
+        {
+            program[i] = dup();
         }
         else if (token == ".")
         {
@@ -165,12 +251,26 @@ void parse_tokens(std::string filepath)
             program[block_ind].param = i + 1;
             blocks.push(i);
         }
+        else if (token == "while")
+        {
+            program[i] = wile();
+            blocks.push(i);
+        }
+        else if (token == "do")
+        {
+            program[i] = doo();
+            blocks.push(i);
+        }
         else if (token == "end")
         {
             program[i] = end();
             int block_ind = blocks.pop();
 
-            assert((program[block_ind].id == IF || program[block_ind].id == ELSE) && "End can only close 'if' and 'else' blocks");
+            assert((program[block_ind].id == IF || program[block_ind].id == ELSE || program[block_ind].id == DO) && "End can only close 'if', 'else' or 'do' blocks");
+            if (program[block_ind].id == DO)
+            {
+                program[i].param = blocks.pop();
+            }
             program[block_ind].param = i + 1;
         }
         else
